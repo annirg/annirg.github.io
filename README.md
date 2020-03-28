@@ -1,37 +1,27 @@
-## Welcome to GitHub Pages
 
-You can use the [editor on GitHub](https://github.com/annirg/annirg.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+mkdir -p /data/app/elk/{elasticsearch,logstash,kibana}
+mkdir -p /data/app/elk/elasticsearch/{data,plugins}
+useradd -s /sbin/nologin -u 1000 elasticsearch
+chown 1000:1000 -R /data/app/elk/elasticsearch/
+docker pull elasticsearch:7.6.1
+docker pull logstash:7.6.1
+docker pull kibana:7.6.1
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Elasticsearch
+vim /etc/sysctl.conf
+vm.max_map_count=262144
+sysctl -p
+docker run -d -p 9200:9200 -p 9300:9300 --name es -e "discovery.type=single-node" -e "ES_JAVA_OPTS=-Xms512m -Xmx1g" -v /data/app/elk/elasticsearch/data:/usr/share/elasticsearch/data -v /data/app/elk/elasticsearch/plugins:/usr/share/elasticsearch/plugins -v /data/app/elk/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml elasticsearch:7.6.1
 
-### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+docker run -d -p 9100:9100 --name es-head mobz/elasticsearch-head:5
 
-```markdown
-Syntax highlighted code block
+vim /data/app/elk/elasticsearch/elasticsearch.yml
+cluster.name: "xinglong"
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+network.host: 0.0.0.0
 
-# Header 1
-## Header 2
-### Header 3
 
-- Bulleted
-- List
+docker restart es es-head
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/annirg/annirg.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
